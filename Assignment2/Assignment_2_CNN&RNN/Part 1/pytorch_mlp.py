@@ -33,8 +33,4 @@ class MLP(nn.Module):
             out = layer(out)
             if it != len(self.layers) - 1:
                 out = F.relu(out)
-            else:
-                out = (
-                    torch.sigmoid(out) if self.n_classes == 2 else F.softmax(out, dim=0)
-                )
         return out

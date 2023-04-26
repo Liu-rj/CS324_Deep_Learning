@@ -42,12 +42,10 @@ def train(FLAGS, train_loader, test_loader, device):
     loss_fn = nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=FLAGS.learning_rate)
     epochs, train_acc, train_loss, test_acc, test_loss = [], [], [], [], []
-    for epoch in range(FLAGS.max_steps):
+    for epoch in tqdm(range(FLAGS.max_steps)):
         model.train()
         total_acc, total_loss = 0, 0
-        for it, (input, target) in tqdm(
-            enumerate(train_loader), total=len(train_loader)
-        ):
+        for it, (input, target) in enumerate(train_loader):
             optimizer.zero_grad()
             input = input.reshape(input.shape[0], -1).to(device)
             target = target.to(device)
@@ -65,9 +63,7 @@ def train(FLAGS, train_loader, test_loader, device):
             train_loss.append(total_loss / len(train_loader))
 
             total_acc, total_loss = 0, 0
-            for it, (input, target) in tqdm(
-                enumerate(test_loader), total=len(test_loader)
-            ):
+            for it, (input, target) in enumerate(test_loader):
                 input = input.reshape(input.shape[0], -1).to(device)
                 target = target.to(device)
                 pred = model(input)

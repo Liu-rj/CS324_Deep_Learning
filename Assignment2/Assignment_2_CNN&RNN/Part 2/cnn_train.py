@@ -8,10 +8,11 @@ import matplotlib.pyplot as plt
 import torchvision
 import torchvision.transforms as transforms
 from cnn_model import CNN
+import pandas as pd
 
 # Default constants
 LEARNING_RATE_DEFAULT = 1e-4
-BATCH_SIZE_DEFAULT = 32
+BATCH_SIZE_DEFAULT = 64
 MAX_EPOCHS_DEFAULT = 200
 EVAL_FREQ_DEFAULT = 10
 OPTIMIZER_DEFAULT = "ADAM"
@@ -41,14 +42,19 @@ def train(FLAGS, train_loader, test_loader, device):
     # YOUR TRAINING CODE GOES HERE
     model = CNN(3, 10).to(device)
     loss_fn = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=FLAGS.learning_rate)
+    if FLAGS.optimizer == "ADAM":
+        optimizer = torch.optim.Adam(model.parameters(), lr=FLAGS.learning_rate)
+    elif FLAGS.optimizer == "SGD":
+        optimizer = torch.optim.SGD(model.parameters(), lr=FLAGS.learning_rate)
+    elif FLAGS.optimizer == "ADAGRAD":
+        optimizer = torch.optim.Adagrad(model.parameters(), lr=FLAGS.learning_rate)
+    else:
+        raise NotImplementedError
     epochs, train_acc, train_loss, test_acc, test_loss = [], [], [], [], []
-    for epoch in range(FLAGS.max_steps):
+    for epoch in tqdm(range(FLAGS.max_steps)):
         model.train()
         total_acc, total_loss = 0, 0
-        for it, (input, target) in tqdm(
-            enumerate(train_loader), total=len(train_loader)
-        ):
+        for it, (input, target) in enumerate(train_loader):
             optimizer.zero_grad()
             input = input.to(device)
             target = target.to(device)
@@ -66,9 +72,7 @@ def train(FLAGS, train_loader, test_loader, device):
             train_loss.append(total_loss / len(train_loader))
 
             total_acc, total_loss = 0, 0
-            for it, (input, target) in tqdm(
-                enumerate(test_loader), total=len(test_loader)
-            ):
+            for it, (input, target) in enumerate(test_loader):
                 input = input.to(device)
                 target = target.to(device)
                 pred = model(input)
@@ -82,6 +86,17 @@ def train(FLAGS, train_loader, test_loader, device):
             print(
                 f"Epoch {epoch} | Train Acc {train_acc[-1]:.4f} | Train Loss {train_loss[-1]:.4f} | Test Acc {test_acc[-1]:.4f} | Test Loss {test_loss[-1]:.4f}"
             )
+
+    s1 = pd.Series(epoch, name="epoch")
+    s2 = pd.Series(train_acc, name="train acc")
+    s3 = pd.Series(train_loss, name="train loss")
+    s4 = pd.Series(test_acc, name="test acc")
+    s5 = pd.Series(test_loss, name="test loss")
+    df = pd.concat([s1, s2, s3, s4, s5], axis=1)
+    df.to_csv(
+        "outputs/{}_{}.csv".format(FLAGS.optimizer, FLAGS.learning_rate),
+        index=False,
+    )
     return epochs, train_acc, train_loss, test_acc, test_loss
 
 
@@ -140,5 +155,11 @@ if __name__ == "__main__":
         default=DATA_DIR_DEFAULT,
         help="Directory for storing input data",
     )
+    parser.add_argument(
+        "--optimizer",
+        type=str,
+        default=OPTIMIZER_DEFAULT,
+        help="Optimizer",
+    )
     FLAGS, unparsed = parser.parse_known_args()
-    main(FLAGS, 'cpu')
+    main(FLAGS, "cuda")

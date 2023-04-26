@@ -15,7 +15,7 @@ class CNN(nn.Module):
         super(CNN, self).__init__()
         self.n_channels = n_channels
         self.n_classes = n_classes
-        self.layers = []
+        self.layers = nn.ModuleList()
         self.layers.append(
             nn.Sequential(
                 nn.Conv2d(n_channels, 64, 3, stride=1, padding=1),
@@ -91,6 +91,5 @@ class CNN(nn.Module):
         h = x
         for layer in self.layers:
             h = layer(h)
-        h = self.fc(h.view(-1, 512))
-        out = F.softmax(h, dim=0)
+        out = self.fc(h.view(-1, 512))
         return out
