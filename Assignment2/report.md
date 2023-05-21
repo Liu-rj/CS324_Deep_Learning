@@ -82,7 +82,7 @@ Although pytorch MLP and numpy MLP has slight different of performance on traini
 
 #### Network & Hyper-parameter Configuration
 
-Model & Loss Function: To train images of CIFAR10 using vanilla MLP structure, we need to first flatten the image which is of size (32 *32) and has 3 channels. That is, the input layer of CIFAR10 should be 32* 32 * 3 = 3072. Therefore, the Pytorch MLP for training CIFAR10 contains 2 Linear layers with size (3072,20) and (20,2) , respectively. ReLU is choosed as activation function and CrossEntropyLoss is used to compute gradient for backward.
+Model & Loss Function: To train images of CIFAR10 using vanilla MLP structure, we need to first flatten the image which is of size (32, 32) and has 3 channels. That is, the input layer of CIFAR10 should be $32 \times 32 \times 3 = 3072$. Therefore, the Pytorch MLP for training CIFAR10 contains 2 Linear layers with size (3072,20) and (20,2) , respectively. ReLU is choosed as activation function and CrossEntropyLoss is used to compute gradient for backward.
 
 Hyper-parameter: Stochastic gradient descent (SGD) is used to conduct gradient update on model parameter with `learning_rate=1e-2`. For SGD, the mini-batch size is set to 32, that is, we train 32 images and update the gradient at one time. The model runs 200 epochs and are evaluated every 10 epochs.
 
@@ -98,7 +98,7 @@ Resuls above shows that our pytorch MLP model gradually learns from the data sam
 
 ### Task 1. Model Implementation
 
-The architecture  of the CNN network implemented here follows the slides at the end of the CNN lecture, which consists of 8 convolutional layers, 5 max pooling layers and 1 full-connect layer. The input is 3-channel image of size 32 *32. Kernel size, stride, padding, input channels and output channels of each convolutional layer are already given in slides, so we will not cover them here. For the size of each channel, given input of size N* N, we can get the output size of each channel as
+The architecture  of the CNN network implemented here follows the slides at the end of the CNN lecture, which consists of 8 convolutional layers, 5 max pooling layers and 1 full-connect layer. The input is 3-channel image of size (32,32). Kernel size, stride, padding, input channels and output channels of each convolutional layer are already given in slides, so we will not cover them here. For the size of each channel, given input of size (N,N), we can get the output size of each channel as
 
 $$
 N_{out}=[(N_{in}−K+2P)/S]+1,
@@ -146,7 +146,7 @@ Results show that Adagrad optimizer converges slower than Adam optimizer. The mo
 
 ### Task 1. Model Implementation
 
-The detailed theoratical model structure is given in assignment instructions. Thus, the furmula description will not be covered in this report. The concrete implementation is shown as follows. The core of the RNN model is 3 linear layers ($W_{hx}$, $W_{hh}$ and $W_{ph}$ with size `input_dim` * 128, 128 * 128 and 128 * 10, respectively). In the forward pass, the current state input (a single number) and previous step's hidden state is passed as the paramter for computing the next step's hidden state and output of current state. We use `torch.nn.tanh()` and `torch.nn.softmax()` to express the $tanh$ and $softmax$ operations.
+The detailed theoratical model structure is given in assignment instructions. Thus, the furmula description will not be covered in this report. The concrete implementation is shown as follows. The core of the RNN model is 3 linear layers ($W_{hx}$, $W_{hh}$ and $W_{ph}$ with size (`input_dim`,128), (128,128) and (128,10), respectively). In the forward pass, the current state input (a single number) and previous step's hidden state is passed as the paramter for computing the next step's hidden state and output of current state. We use `torch.nn.tanh()` and `torch.nn.softmax()` to express the $tanh$ and $softmax$ operations.
 
 Moreover, `CrossEntropyLoss` is used to compute the loss. It implicitly includes a $softmax$ operator, so we will not explicitly call it in the model forward pass. Also, `RMSProp` optimizer is used as requied for tuning the weights.
 
