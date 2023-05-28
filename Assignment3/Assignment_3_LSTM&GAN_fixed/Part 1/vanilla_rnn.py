@@ -7,17 +7,23 @@ import torch.nn as nn
 
 
 class VanillaRNN(nn.Module):
-    def __init__(self, seq_length, input_dim, hidden_dim, output_dim, batch_size):
+    def __init__(self, seq_length, input_dim, hidden_dim, output_dim):
         super(VanillaRNN, self).__init__()
         # Initialization here ...
+        self.seq_length = seq_length
+        self.hidden_dim = hidden_dim
+
         self.W_hx = nn.Linear(input_dim, hidden_dim)
         self.W_hh = nn.Linear(hidden_dim, hidden_dim)
         self.W_ph = nn.Linear(hidden_dim, output_dim)
 
-    def forward(self, x, hidden):
+    def forward(self, x):
         # Implementation here ...
-        hidden = torch.tanh(self.W_hx(x) + self.W_hh(hidden))
-        outputs = self.W_ph(hidden)
-        return outputs, hidden
+        h = torch.zeros(1, self.hidden_dim, device="cuda")
+        for i in range(self.seq_length):
+            xi = x[:, i].unsqueeze(-1)
+            h = torch.tanh(self.W_hx(xi) + self.W_hh(h))
+        outputs = self.W_ph(h)
+        return outputs
 
     # add more methods here if needed

@@ -32,7 +32,7 @@ class PalindromeDataset(data.Dataset):
         self.data = np.random.default_rng().choice(
             max_num, self.total_len, replace=False
         )
-        self.mapping = np.eye(10) if one_hot else np.arange(10).reshape(10, 1)
+        # self.mapping = np.eye(10) if one_hot else np.arange(10).reshape(10, 1)
 
     def __len__(self):
         return self.total_len
@@ -42,7 +42,8 @@ class PalindromeDataset(data.Dataset):
         full_palindrome = self.generate_palindrome(self.data[idx])
         # Split palindrome into inputs (N-1 digits) and target (1 digit)
         inputs, labels = full_palindrome[0:-1], int(full_palindrome[-1])
-        inputs = self.mapping[inputs].astype(np.float32)
+        # inputs = self.mapping[inputs].astype(np.float32)
+        inputs = inputs.astype(np.float32)
         return inputs, labels
 
     def generate_palindrome(self, data):

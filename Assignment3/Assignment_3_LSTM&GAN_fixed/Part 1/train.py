@@ -10,6 +10,7 @@ import torch.nn as nn
 
 from dataset import PalindromeDataset
 from lstm import LSTM
+from vanilla_rnn import VanillaRNN
 from utils import AverageMeter, accuracy
 
 
@@ -61,20 +62,25 @@ def evaluate(model, data_loader, criterion, device, config):
     return losses.avg, accuracies.avg
 
 
-def main(config):
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-
+def main(config, device, model_name):
     # Initialize the model that we are going to use
-    model = LSTM(
-        config.input_length, config.input_dim, config.num_hidden, config.num_classes
-    )
+    if model_name == "LSTM":
+        model = LSTM(
+            config.input_length, config.input_dim, config.num_hidden, config.num_classes
+        )
+    elif model_name == "VanillaRNN":
+        model = VanillaRNN(
+            config.input_length, config.input_dim, config.num_hidden, config.num_classes
+        )
     model.to(device)
 
     # Initialize the dataset and data loader
-    dataset = PalindromeDataset(config.input_length + 1, 1000)
+    dataset = PalindromeDataset(config.input_length + 1, 2048)
     # Split dataset into train and validation sets
     generator = torch.Generator().manual_seed(42)
-    train_dataset, val_dataset = random_split(dataset, lengths=[0.8, 0.2], generator=generator)
+    train_dataset, val_dataset = random_split(
+        dataset, lengths=[0.8, 0.2], generator=generator
+    )
     # Create data loaders for training and validation
     train_dloader = DataLoader(train_dataset, config.batch_size)
     val_dloader = DataLoader(val_dataset, config.batch_size)
@@ -83,6 +89,8 @@ def main(config):
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.RMSprop(model.parameters(), lr=config.learning_rate)
 
+    train_acces, val_acces = [], []
+    train_losses, val_losses = [], []
     for epoch in range(config.max_epoch):
         # Train the model for one epoch
         train_loss, train_acc = train(
@@ -92,7 +100,13 @@ def main(config):
         # Evaluate the trained model on the validation set
         val_loss, val_acc = evaluate(model, val_dloader, criterion, device, config)
 
+        train_acces.append(train_acc)
+        val_acces.append(val_acc)
+        train_losses.append(train_loss)
+        val_losses.append(val_loss)
+
     print("Done training.")
+    return train_acces, train_losses, val_acces, val_losses
 
 
 if __name__ == "__main__":
@@ -125,7 +139,7 @@ if __name__ == "__main__":
         "--learning_rate", type=float, default=0.001, help="Learning rate"
     )
     parser.add_argument(
-        "--max_epoch", type=int, default=1000, help="Number of epochs to run for"
+        "--max_epoch", type=int, default=100, help="Number of epochs to run for"
     )
     parser.add_argument("--max_norm", type=float, default=10.0)
     parser.add_argument(
@@ -140,4 +154,4 @@ if __name__ == "__main__":
 
     config = parser.parse_args()
     # Train the model
-    main(config)
+    main(config, "cuda", "LSTM")

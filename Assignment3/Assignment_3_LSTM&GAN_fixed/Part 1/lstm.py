@@ -13,9 +13,7 @@ class LSTM(nn.Module):
         super(LSTM, self).__init__()
         # Initialization here ...
         self.seq_length = seq_length
-        self.input_dim = input_dim
         self.hidden_dim = hidden_dim
-        self.output_dim = output_dim
 
         self.W_fx = nn.Linear(input_dim, hidden_dim)
         self.W_ix = nn.Linear(input_dim, hidden_dim)
@@ -31,8 +29,8 @@ class LSTM(nn.Module):
 
     def forward(self, x):
         # Implementation here ...
-        h = torch.zeros(self.hidden_dim, device="mps")
-        c = torch.zeros(self.hidden_dim, device="mps")
+        h = torch.zeros(1, self.hidden_dim, device="cuda")
+        c = torch.zeros(1, self.hidden_dim, device="cuda")
         for i in range(self.seq_length):
             xi = x[:, i].unsqueeze(-1)
             g = torch.tanh(self.W_gx(xi) + self.W_gh(h))
